@@ -7,7 +7,7 @@ The TargetScan 7.0 context++ score code produces essentially the same output as 
 The script takes several input files
 	* with names specified in one's command:
 		1) a miRNA file: a tab-delimited text file of mature miRNA information.  This is different from the file required by targetscan_70.pl.
-			(sample file: "miR_for_context_scores.vert70_sample.txt")
+			(sample file: "miR_for_context_scores.sample.txt")
 		2) a UTR file: a tab-delimited multiple sequence alignment of the 3' UTRs of genes from the desired species
 			which is the same as the input file for targetscan_70.pl.
 			(sample file: "UTR_Sequences_sample.txt")
@@ -40,7 +40,7 @@ OTHER DEPENDENCIES
 	The ORF file should have the same format as the 3' UTR file (3 tab-delimited fields: sequence ID, species ID, sequence).
 	The ORF sequences can be aligned (with gaps) or not, but the alignment is ignored; gaps are removed.
 	Run this command on the ORF file (to get the ORF lengths and count 8mer sites)
-		./targetscan_count_8mers.pl miR_Family_info_sample.txt ORF_Sequences_sample.txt >| ORF_8mer_counts_sample.txt
+		./targetscan_count_8mers.pl miR_Family_info_sample.txt ORF_Sequences_sample.txt > ORF_8mer_counts_sample.txt
 	Both output files are needed to run targetscan_70_context_scores.pl
 	Note that we have included sample input and output files for this step.
 
@@ -102,11 +102,11 @@ The script can be executed in 3 different ways:
 1) Running the script without any arguments (./targetscan_70_context_scores.pl) will print out a help screen.
 2) Running the script with the '-h' flag (./targetscan_70_context_scores.pl -h) will print out a formats of input files.
 3) Running the script with input filenames and output file will perform the analysis. Ex:
-	./targetscan_70_context_scores.20160325a.pl miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt Targets.BL_PCT.context_scores.20160325a.txt
+	./targetscan_70_context_scores.pl miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt Targets.BL_PCT.context_scores.txt
 
 OUTPUT FILE
 
-In this folder is a sample output file called "targetscan_70_context_scores_output.txt".
+In this folder there is a sample output file called "Targets.BL_PCT.context_scores.txt".
 The output file also contain several tab separated entries per line.
 
 The sample output file has a headers that names each column:

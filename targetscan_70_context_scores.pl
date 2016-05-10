@@ -50,7 +50,7 @@ use warnings;
 # 5 - Print out all data, including percentile ranks, into final file
 
 # Sample command
-# ./targetscan_70_context_scores.pl miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt Targets.BL_PCT.context_scores.txt
+# ./targetscan_70_context_scores.pl miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt All_cell_lines.AIRs.txt Targets.BL_PCT.context_scores.txt
 
 use warnings;
 # Needed for percentile rank
@@ -79,9 +79,6 @@ $TA_SPS_FILE = "$FindBin::RealBin/TA_SPS_by_seed_region.txt";
 
 # Agarwal coefficients file
 $AgarwalParamFile = "$FindBin::RealBin/Agarwal_2015_parameters.txt";
-
-# AIRs (UTR profiles) file
-$AIRsFile = "$FindBin::RealBin/All_cell_lines.AIRs.txt";
 
 # Minimum distance to end of CDS.  If site is closer, context scores are not calculated
 $MIN_DIST_TO_CDS = 15;
@@ -646,7 +643,7 @@ sub readMiRNAs
 		{
 			print STDERR "ERROR: miRNA family $miRNA_familyID seems to have more than 1 seed region: $miRNA_familyID_to_seedRegion{$miRNA_familyID}, $seedRegion\n";
 			print STDERR "Please correct family definitions and re-run analysis\n";
-			exit;
+			exit(1);
 		}
 
 		if ( $mature_seq{$familySpecies} )
@@ -784,10 +781,10 @@ sub getUsage
 		     using TargetScan methods. 
 
 	USAGE:
-		$0 miRNA_file UTR_file PredictedTargetsBL_PCT_file ORF_lengths_file ORF_8mer_counts_file ContextScoresOutput_file
+		$0 miRNA_file UTR_file PredictedTargetsBL_PCT_file ORF_lengths_file ORF_8mer_counts_file UTR_profiles ContextScoresOutput_file
 
 	EXAMPLE:
-		$0 miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt Targets.BL_PCT.context_scores.txt
+		$0 miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt All_cell_lines.AIRs.txt Targets.BL_PCT.context_scores.txt
 
 
 	Required input files:
@@ -796,12 +793,11 @@ sub getUsage
 		PredictedTargets => output from targetscan_70_BL_PCT.pl
 		ORF lengths      => length of each ORF corresponding to aligned 3\' UTRs 
 		ORF 8mer counts  => number of 8mer sites in ORFs of previous file
+		UTR profiles     => Affected isoform ratios (AIRs) by 3\' UTR region
 		TA_SPS_FILE      => TA and SPS parameters (same as for targetscan_70_BL_PCT.pl) 
 		                    called "TA_SPS_by_seed_region.txt"
 		CS++ parameters  => Parameters for context++ score model (Agarwal et al., 2015) 
 		                    called "Agarwal_2015_parameters.txt"
-		UTR profiles     => Affected isoform ratios (AIRs) by 3\' UTR region
-		                    called "All_cell_lines.AIRs.txt"
 
 	Output file:
 		ContextScoresOutput => Lists context scores and contributions
@@ -824,48 +820,49 @@ sub checkArguments
 	{
 		print STDERR "$usage";
 		print STDERR "$fileFormats";
-		exit (0);
+		exit(0);
 	}
-	elsif (! $ARGV[2])
+	elsif (scalar(@ARGV) != 7)
 	{
+		print STDERR "\nYou need to supply exactly 7 arguments\n";
 		print STDERR "$usage";
-		exit (0);
+		exit(1);
 	}
 	elsif (! -e $ARGV[0])	# miRNA file not present
 	{
 		print STDERR "\nI can't find the file $ARGV[0]\n";
 		print STDERR "which should contain the miRNA families by species.\n";
-		exit;
+		exit(1);
 	}
 	elsif (! -e $ARGV[1])	# UTR file not present
 	{
 		print STDERR "\nI can't find the file $ARGV[1]\n";
 		print STDERR "which should contain the aligned UTRs.\n";
-		exit;
+		exit(1);
 	}
 	elsif (! -e $ARGV[2])	# PredictedTargets file not present
 	{
 		print STDERR "\nI can't find the file $ARGV[2]\n";
-		print STDERR "which should contain the predicted targets/BL/PCT file from targetscan_70_BL_PCT.pl.\n";
-		exit;
+		print STDERR "which should contain the predicted targets/BL/PCT file from targetscan_70_BL_PCT.pl .\n";
+		exit(1);
 	}
-	elsif (! $ARGV[3])	# Output file not given
+	elsif (! -e $ARGV[3])	# ORF lengths file not present
 	{
-		print STDERR "\n*** You need to supply a name for the ORF length data file ***\n";
-		print STDERR "$usage";
-		exit;
+		print STDERR "\nI can't find the file $ARGV[3]\n";
+		print STDERR "which should contain the ORF lengths.\n";
+		exit(1);
 	}
-	elsif (! $ARGV[4])	# Output file not given
+	elsif (! -e $ARGV[4])	# ORF 8mer counts file not present
 	{
-		print STDERR "\n*** You need to supply a name for the ORF 8mer counts file ***\n";
-		print STDERR "$usage";
-		exit;
+		print STDERR "\nI can't find the file $ARGV[4]\n";
+		print STDERR "which should contain the ORF 8mer counts.\n";
+		exit(1);
 	}
-	elsif (! $ARGV[5])	# Output file not given
+	elsif (! -e $ARGV[5])	# Affected isoform ratios (AIRs) by 3' UTR region file not present
 	{
-		print STDERR "\n*** You need to supply a name for the context++ scores output file ***\n";
-		print STDERR "$usage";
-		exit (0);
+		print STDERR "\nI can't find the file $ARGV[4]\n";
+		print STDERR "which should contain the affected isoform ratios (AIRs) by 3' UTR region.\n";
+		exit(1);
 	}
 	
 	# Get the file names
@@ -874,8 +871,9 @@ sub checkArguments
 	$predictedTargetsFile = $ARGV[2];
 	$orfLengthsFile = $ARGV[3];
 	$orf8mersFile = $ARGV[4];
-	$contextScoreFileOutput = $ARGV[5];
-	$contextScoresOutputTemp = "$ARGV[5].tmp";
+	$AIRsFile = $ARGV[5];
+	$contextScoreFileOutput = $ARGV[6];
+	$contextScoresOutputTemp = "$ARGV[6].tmp";
 	
 	if (-e $contextScoreFileOutput)
 	{
@@ -927,6 +925,10 @@ sub getFileFormats
 	                                                              created by targetscan_count_8mers.pl
 	
 	5 - ORF 8mer counts (for ORFs matching 3\' UTRs in UTR_file): file with Gene/UTR ID, species ID, miRNA family ID/name, count of sites
+
+	6 - UTR_profiles => Affected isoform ratios (AIRs) by 3' UTR region file. Contains 4 tab-separated fields.
+
+	    See All_cell_lines.AIRs.txt for sample
 	
 EODOCS
 }

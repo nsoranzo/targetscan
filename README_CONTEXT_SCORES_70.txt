@@ -19,10 +19,11 @@ The script takes several input files
 		5) ORF 8mer counts file: contains the number of 8mer sites in ORFs of file (4)
 			This needs to be created before running this script.
 			(sample file: "ORF_8mer_counts_sample.txt")
+		6) UTR profiles file: contains AIRs for each region of each 3' UTR
+		    (sample file: "All_cell_lines.AIRs.txt")
 	* with names hard-coded in the analysis script
-		6) "TA_SPS_by_seed_region.txt": contains TA and SPS parameters for each seed region
-		7) "Agarwal_2015_parameters.txt": with model parameters to calculate context++ score contributions
-		8) "All_cell_lines.AIRs.txt": AIRs for each region of each 3' UTR
+		7) "TA_SPS_by_seed_region.txt": contains TA and SPS parameters for each seed region
+		8) "Agarwal_2015_parameters.txt": with model parameters to calculate context++ score contributions
 
 In this directory we provide samples of all of the above files.
 
@@ -70,13 +71,14 @@ cut -f1,4,5 UTR_Sequences.txt > UTR_sequences_sample.txt
 
 ORF lengths and ORF 8mer counts files can be created with the command under (2) in "OTHER DEPENDENCIES".
 
-Three files have names that are hard-coded in the script
+"UTR profiles" file (ex: "All_cell_lines.AIRs.txt") -- contains sample data for the sample 3' UTRs.
+The complete file (used by Agarwal et al.) is included in the "3P-seq tag info" zip archive
+on http://www.targetscan.org/cgi-bin/targetscan/data_download.cgi?db=vert_70
+Only the first 4 columns are needed.
+
+Two files have names that are hard-coded in the script:
 	"TA_SPS_by_seed_region.txt"
 	"Agarwal_2015_parameters.txt"
-	"All_cell_lines.AIRs.txt": contains sample data for the sample 3' UTRs
-		The complete file (used by Agarwal et al.) is included in the "3P-seq tag info" zip archive 
-		on http://www.targetscan.org/cgi-bin/targetscan/data_download.cgi?db=vert_70
-		Only the first 4 columns are needed.
 
 Each line of the predicted targets file (ex: targetscan_70_output.BL_PCT.txt) consists of 13 tab separated entries
 (although not all fields are required)
@@ -102,7 +104,7 @@ The script can be executed in 3 different ways:
 1) Running the script without any arguments (./targetscan_70_context_scores.pl) will print out a help screen.
 2) Running the script with the '-h' flag (./targetscan_70_context_scores.pl -h) will print out a formats of input files.
 3) Running the script with input filenames and output file will perform the analysis. Ex:
-	./targetscan_70_context_scores.pl miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt Targets.BL_PCT.context_scores.txt
+	./targetscan_70_context_scores.pl miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt All_cell_lines.AIRs.txt Targets.BL_PCT.context_scores.txt
 
 OUTPUT FILE
 

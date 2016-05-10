@@ -60,7 +60,7 @@ if (! $ARGV[0])
 	print STDERR "\nCalculate median branch length from each UTR alignment\n";
 	print STDERR "  and then assign to a UTR bin.\n";
 	print STDERR "\nUSAGE: $0 tabbedAlignmentFile > Gene_BL_bin_file\n";
-	print STDERR "Ex: $0 UTR_Sequences_sample.txt > UTRs_median_BLs_bins.txt\n";
+	print STDERR "Ex: $0 test/input/UTR_Sequences_sample.txt > UTRs_median_BLs_bins.txt\n";
 	print STDERR "\ntabbedAlignmentFile fields: <seqID> <species> <sequence>\n";
 	print STDERR "    where <species> belongs to the set of NCBI Taxonomy IDs\n";
 	print STDERR "    (such as 9606 for human) used by TargetScanHuman and Mouse 5.\n";

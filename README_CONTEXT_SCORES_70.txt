@@ -7,20 +7,20 @@ The TargetScan 7.0 context++ score code produces essentially the same output as 
 The script takes several input files
 	* with names specified in one's command:
 		1) a miRNA file: a tab-delimited text file of mature miRNA information.  This is different from the file required by targetscan_70.pl.
-			(sample file: "miR_for_context_scores.sample.txt")
+			(sample file: "test/input/miR_for_context_scores.sample.txt")
 		2) a UTR file: a tab-delimited multiple sequence alignment of the 3' UTRs of genes from the desired species
 			which is the same as the input file for targetscan_70.pl.
-			(sample file: "UTR_Sequences_sample.txt")
+			(sample file: "test/input/UTR_Sequences_sample.txt")
 		3) a predicted targets file with BLSs and PCTs: output from targetscan_70_BL_PCT.pl.
-			(sample file: "targetscan_70_output.BL_PCT.txt")
+			(sample file: "test/output/targetscan_70_output.BL_PCT.txt")
 		4) ORF lengths file (for ORFs matching 3' UTRs in UTR_file): contains the length of each ORF corresponding to aligned 3' UTRs
 			This needs to be created before running this script.
-			(sample file: "ORF_Sequences_sample.lengths.txt")
+			(sample file: "test/output/ORF_Sequences_sample.lengths.txt")
 		5) ORF 8mer counts file: contains the number of 8mer sites in ORFs of file (4)
 			This needs to be created before running this script.
-			(sample file: "ORF_8mer_counts_sample.txt")
+			(sample file: "test/output/ORF_8mer_counts_sample.txt")
 		6) UTR profiles file: contains AIRs for each region of each 3' UTR
-		    (sample file: "All_cell_lines.AIRs.txt")
+		    (sample file: "test/input/All_cell_lines.AIRs.txt")
 	* with names hard-coded in the analysis script
 		7) "TA_SPS_by_seed_region.txt": contains TA and SPS parameters for each seed region
 		8) "Agarwal_2015_parameters.txt": with model parameters to calculate context++ score contributions
@@ -41,7 +41,8 @@ OTHER DEPENDENCIES
 	The ORF file should have the same format as the 3' UTR file (3 tab-delimited fields: sequence ID, species ID, sequence).
 	The ORF sequences can be aligned (with gaps) or not, but the alignment is ignored; gaps are removed.
 	Run this command on the ORF file (to get the ORF lengths and count 8mer sites)
-		./targetscan_count_8mers.pl miR_Family_info_sample.txt ORF_Sequences_sample.txt > ORF_8mer_counts_sample.txt
+		./targetscan_count_8mers.pl test/input/miR_Family_info_sample.txt test/input/ORF_Sequences_sample.txt > ORF_8mer_counts_sample.txt
+	After this command, the ORF lengths will be in a file inside the same directory of the ORF file, e.g. test/input/ORF_Sequences_sample.lengths.txt .
 	Both output files are needed to run targetscan_70_context_scores.pl
 	Note that we have included sample input and output files for this step.
 
@@ -50,7 +51,7 @@ FILE FORMATS
 
 The format of the input files is important for the script to work correctly. 
 
-miRNA mature sequence file (ex: miR_for_context_scores.txt) -- each line consists of 4 tab separated entries:
+miRNA mature sequence file (ex: test/input/miR_for_context_scores.sample.txt) -- each line consists of 4 tab separated entries:
 1) miRNA family ID: Name of the miRNA family
 2) Species ID of this miRNA family (which should match species IDs in the UTR and predicted targets input files)
 3) MiRBase ID: name of a mature miRNA sequence
@@ -60,18 +61,18 @@ miRNA mature sequence file (ex: miR_for_context_scores.txt) -- each line consist
 on the Data Download page), run this command:
 cut -f1,3,4,5 miR_Family_Info.txt > miR_for_context_scores.txt
 
-Each line of the UTR alignment file (ex: UTR_sequences_sample.txt) consists of 3 tab separated entries
+Each line of the UTR alignment file (ex: test/input/UTR_Sequences_sample.txt) consists of 3 tab separated entries
 1) Gene symbol or transcript ID
 2) Species ID (which should match species IDs in miRNA input file) 
 3) Sequence 
 
 To generate a file in this format from the complete "UTR Sequences" file (UTR_Sequences.txt from the table 
 on the Data Download page), run this command:
-cut -f1,4,5 UTR_Sequences.txt > UTR_sequences_sample.txt
+cut -f1,4,5 UTR_Sequences.txt > UTR_Sequences_sample.txt
 
 ORF lengths and ORF 8mer counts files can be created with the command under (2) in "OTHER DEPENDENCIES".
 
-"UTR profiles" file (ex: "All_cell_lines.AIRs.txt") -- contains sample data for the sample 3' UTRs.
+"UTR profiles" file (ex: "test/input/All_cell_lines.AIRs.txt") -- contains sample data for the sample 3' UTRs.
 The complete file (used by Agarwal et al.) is included in the "3P-seq tag info" zip archive
 on http://www.targetscan.org/cgi-bin/targetscan/data_download.cgi?db=vert_70
 Only the first 4 columns are needed.
@@ -80,7 +81,7 @@ Two files have names that are hard-coded in the script:
 	"TA_SPS_by_seed_region.txt"
 	"Agarwal_2015_parameters.txt"
 
-Each line of the predicted targets file (ex: targetscan_70_output.BL_PCT.txt) consists of 13 tab separated entries
+Each line of the predicted targets file (ex: test/output/targetscan_70_output.BL_PCT.txt) consists of 13 tab separated entries
 (although not all fields are required)
 1)  GeneID - name/ID of gene (from UTR input file)
 2)  miRNA family_ID - name/ID of miRNA family (from miRNA input file)
@@ -104,11 +105,11 @@ The script can be executed in 3 different ways:
 1) Running the script without any arguments (./targetscan_70_context_scores.pl) will print out a help screen.
 2) Running the script with the '-h' flag (./targetscan_70_context_scores.pl -h) will print out a formats of input files.
 3) Running the script with input filenames and output file will perform the analysis. Ex:
-	./targetscan_70_context_scores.pl miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt All_cell_lines.AIRs.txt Targets.BL_PCT.context_scores.txt
+	./targetscan_70_context_scores.pl test/input/miR_for_context_scores.sample.txt test/input/UTR_Sequences_sample.txt test/output/targetscan_70_output.BL_PCT.txt test/output/ORF_Sequences_sample.lengths.txt test/output/ORF_8mer_counts_sample.txt test/input/All_cell_lines.AIRs.txt Targets.BL_PCT.context_scores.txt
 
 OUTPUT FILE
 
-In this folder there is a sample output file called "Targets.BL_PCT.context_scores.txt".
+In the test/output/ folder there is a sample output file called "Targets.BL_PCT.context_scores.txt".
 The output file also contain several tab separated entries per line.
 
 The sample output file has a headers that names each column:

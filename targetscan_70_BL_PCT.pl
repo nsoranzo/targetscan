@@ -92,7 +92,7 @@ if (! $ARGV[2])
 	print STDERR "\nCalculate branch length and PCT for miRNA targets predicted by TargetScan\n";
 	print STDERR "using a BL tree specific to each gene (UTR) bin\n";
 	print STDERR "\nUSAGE: $0 miRNA_file predicted_targets UTR_bin_info > out\n";
-	print STDERR "Ex: $0 miR_Family_info_sample.txt targetscan_70_output.txt UTRs_median_BLs_bins.txt > targetscan_70_output.BL_PCT.txt\n\n";
+	print STDERR "Ex: $0 test/input/miR_Family_info_sample.txt test/output/targetscan_70_output.txt test/output/UTRs_median_BLs_bins.txt > targetscan_70_output.BL_PCT.txt\n\n";
 	print STDERR "Branch length is calculated only for sites of miRNAs present in input file miRNA_file.\n";
 	print STDERR "PCT is only relevant for highly conserved miRNA families.\n\n";
 	exit;

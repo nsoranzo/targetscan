@@ -9,9 +9,9 @@ The script takes two input files
 	1) A tab-delimited file that lists the miRNA seed sequences and the species in which they are present.
 	2) A tab-delimited multiple sequence alignment of the 3' UTRs of genes from the desired species. 
 
-In this directory we are providing samples of both the above files and the script uses them by default.
+In the test/input/ directory we are providing samples of both the above files and the script uses them by default.
 
-The sample files are: UTR_sequences_sample.txt and miR_Family_info_sample.txt
+The sample files are: UTR_Sequences_sample.txt and miR_Family_info_sample.txt
 If you wish to generate these files from the complete data available for download, 
 	run the commands shown below to convert them to the correct format:
 
@@ -41,11 +41,11 @@ The script can be executed in 3 different ways:
 1) Running the script without any arguments (./targetscan_70.pl) will print out a help screen.
 1) Running the script without the '-h' flag (./targetscan_70.pl -h) will print out a formats of input files.
 2) Running the script with input filenames and output file will perform the analysis. Ex:
-	./targetscan_70.pl miR_Family_info_sample.txt UTR_Sequences_sample.txt targetscan_70_output.txt
+	./targetscan_70.pl test/input/miR_Family_info_sample.txt test/input/UTR_Sequences_sample.txt targetscan_70_output.txt
 
 OUTPUT FILES
 
-In this folder is a sample output file called "targetscan_70_output.txt".
+In the test/output/ folder there is a sample output file called "targetscan_70_output.txt".
 The output file contains several tab separated entries per line:
 
 	The sample output file has a headers that names each column

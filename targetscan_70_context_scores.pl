@@ -50,7 +50,7 @@ use warnings;
 # 5 - Print out all data, including percentile ranks, into final file
 
 # Sample command
-# ./targetscan_70_context_scores.pl miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt All_cell_lines.AIRs.txt Targets.BL_PCT.context_scores.txt
+# ./targetscan_70_context_scores.pl test/input/miR_for_context_scores.sample.txt test/input/UTR_Sequences_sample.txt test/output/targetscan_70_output.BL_PCT.txt test/output/ORF_Sequences_sample.lengths.txt test/output/ORF_8mer_counts_sample.txt test/input/All_cell_lines.AIRs.txt Targets.BL_PCT.context_scores.txt
 
 use warnings;
 # Needed for percentile rank
@@ -784,7 +784,7 @@ sub getUsage
 		$0 miRNA_file UTR_file PredictedTargetsBL_PCT_file ORF_lengths_file ORF_8mer_counts_file UTR_profiles ContextScoresOutput_file
 
 	EXAMPLE:
-		$0 miR_for_context_scores.sample.txt UTR_Sequences_sample.txt targetscan_70_output.BL_PCT.txt ORF_Sequences_sample.lengths.txt ORF_8mer_counts_sample.txt All_cell_lines.AIRs.txt Targets.BL_PCT.context_scores.txt
+		$0 test/input/miR_for_context_scores.sample.txt test/input/UTR_Sequences_sample.txt test/output/targetscan_70_output.BL_PCT.txt test/output/ORF_Sequences_sample.lengths.txt test/output/ORF_8mer_counts_sample.txt test/input/All_cell_lines.AIRs.txt Targets.BL_PCT.context_scores.txt
 
 
 	Required input files:
@@ -919,7 +919,7 @@ sub getFileFormats
 	
 		contains 14 fields, although some fields are ignored
 		
-		See targetscan_70_output.BL_PCT.txt for sample
+		See test/output/targetscan_70_output.BL_PCT.txt for sample
 
 	4 - ORF lengths (for ORFs matching 3\' UTRs in UTR_file):     file with Gene/UTR ID, species ID, length
 	                                                              created by targetscan_count_8mers.pl
@@ -928,7 +928,7 @@ sub getFileFormats
 
 	6 - UTR_profiles => Affected isoform ratios (AIRs) by 3' UTR region file. Contains 4 tab-separated fields.
 
-	    See All_cell_lines.AIRs.txt for sample
+	    See test/input/All_cell_lines.AIRs.txt for sample
 	
 EODOCS
 }

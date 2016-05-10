@@ -25,6 +25,7 @@ use warnings;
 # UTR alignment input file (also used for TargetScan prediction code)
 $UTRfile = $ARGV[0];	# Name of parsed MAF file
 
+use FindBin;
 # Need this to read species tree
 #   so BioPerl needs to be installed
 use Bio::TreeIO;
@@ -35,7 +36,7 @@ use Statistics::Lite qw(:all);
 
 # Generic tree to use to get branch lengths for binning purposes
 # $treeFile = "pct_trees_parameters/Unbinned_3UTR_tree.txt";
-$treeFile = "PCT_parameters/Tree.generic.txt";
+$treeFile = "$FindBin::RealBin/PCT_parameters/Tree.generic.txt";
 
 $refGenome = 9606;
 

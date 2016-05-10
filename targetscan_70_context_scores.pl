@@ -55,6 +55,7 @@ use warnings;
 use warnings;
 # Needed for percentile rank
 use POSIX qw(floor ceil);
+use FindBin;
 
 our ($PAIRING_SCORE);
 
@@ -74,13 +75,13 @@ $siteTypeNum2description{3} = "8mer-1a";
 $siteTypeNum2description{4} = "6mer";
 
 # Required file of TA and SPS values (from Garcia et al., Supp Data 5)
-$TA_SPS_FILE = "TA_SPS_by_seed_region.txt";
+$TA_SPS_FILE = "$FindBin::RealBin/TA_SPS_by_seed_region.txt";
 
 # Agarwal coefficients file
-$AgarwalParamFile = "Agarwal_2015_parameters.txt";
+$AgarwalParamFile = "$FindBin::RealBin/Agarwal_2015_parameters.txt";
 
 # AIRs (UTR profiles) file
-$AIRsFile = "All_cell_lines.AIRs.txt";
+$AIRsFile = "$FindBin::RealBin/All_cell_lines.AIRs.txt";
 
 # Minimum distance to end of CDS.  If site is closer, context scores are not calculated
 $MIN_DIST_TO_CDS = 15;

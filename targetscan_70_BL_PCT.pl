@@ -44,6 +44,7 @@ use warnings;
 #
 #
 
+use FindBin;
 # Need this to read species trees, so BioPerl needs to be installed
 use Bio::TreeIO;
 
@@ -52,7 +53,7 @@ $eConstant = 2.71828182845904523536;
 
 # PCT data files with S:B data for each highly conserved seed for a series of branch lengths
 # these have been corrected so there are no negative BG values
-$pathToTreesParams = "PCT_parameters";	# This dir also contains 10 trees, one for each bin
+$pathToTreesParams = "$FindBin::RealBin/PCT_parameters";	# This dir also contains 10 trees, one for each bin
 $PCT_data_8mer    = "$pathToTreesParams/8mer_PCT_parameters.txt";
 $PCT_data_7mer_m8 = "$pathToTreesParams/7mer_m8_PCT_parameters.txt";
 $PCT_data_7mer_a1 = "$pathToTreesParams/7mer_1a_PCT_parameters.txt";

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/nsoranzo/targetscan.svg?branch=master)](https://travis-ci.org/nsoranzo/targetscan)
+
 # TargetScan
 
 Unofficial fork of [TargetScan](http://www.targetscan.org/).

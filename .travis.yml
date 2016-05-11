@@ -1,0 +1,15 @@
+sudo: false
+language: perl
+
+install:
+  - wget -O ViennaRNA-2.2.5.tar.gz 'http://www.tbi.univie.ac.at/RNA/download/package=viennarna-src-tbi&flavor=sourcecode&dist=2_2_x&arch=src&version=2.2.5'
+  - tar -xzvf ViennaRNA-2.2.5.tar.gz
+  - cd ViennaRNA-2.2.5/
+  - ./configure --without-perl --without-python
+  - make
+  - export PATH=$PATH:$PWD/src/bin/
+  - cpanm Bio::TreeIO
+  - cpanm Statistics::Lite
+
+script:
+  - $TRAVIS_BUILD_DIR/run_tests.sh

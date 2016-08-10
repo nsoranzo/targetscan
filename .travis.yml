@@ -1,10 +1,13 @@
 sudo: false
 language: perl
 
+before_install:
+  - export VIENNARNA_VERSION=2.2.8
+
 install:
-  - wget -O ViennaRNA-2.2.5.tar.gz 'http://www.tbi.univie.ac.at/RNA/download/package=viennarna-src-tbi&flavor=sourcecode&dist=2_2_x&arch=src&version=2.2.5'
-  - tar -xzvf ViennaRNA-2.2.5.tar.gz
-  - cd ViennaRNA-2.2.5/
+  - wget https://www.tbi.univie.ac.at/RNA/download/sourcecode/2_2_x/ViennaRNA-${VIENNARNA_VERSION}.tar.gz
+  - tar -xzvf ViennaRNA-${VIENNARNA_VERSION}.tar.gz
+  - cd ViennaRNA-${VIENNARNA_VERSION}/
   - ./configure --without-perl --without-python
   - make
   - export PATH=$PATH:$PWD/src/bin/

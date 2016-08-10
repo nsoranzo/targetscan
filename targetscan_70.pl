@@ -226,7 +226,7 @@ sub readMiRNAs
 		
 		($MIR_FAM_ID, $mirSeedRegion, $mirSpeciesIDlist) = split (/\t/, $_);
 		
-		# Convert from RNA to DNA if needed
+		# Convert from DNA to RNA if needed
 		$mirSeedRegion =~ s/T/U/gi;
 		
 		# Added by GB 28 Sep 2015

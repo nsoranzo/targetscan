@@ -261,7 +261,7 @@ sub readMiRNAs
 		$mirFamID = $f[0];
 		$mirSeedRegion = $f[1];
 		
-		# Convert from RNA to DNA if needed
+		# Convert from DNA to RNA if needed
 		$mirSeedRegion =~ s/T/U/gi;
 
 		$mirID2seed{$mirFamID} = $mirSeedRegion;

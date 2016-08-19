@@ -62,8 +62,7 @@ our ($USAGE, $FILE_FORMATS, $GROUP_NUM, $MIR_FAM_ID, $LAST_UTR_ID);
 our (@OUTPUT_THIS_GENE_THIS_MIR);
 our (%MIR_ID_2_SEED, %MIR_ID_SPECIES, %MIR_TYPE_2_MATCH, %SPECIES_START_END, %SPECIES_START_END_2_MATCH, %SPECIES_TO_UTR, 
 		%SPECIES_START_END_REMOVED, %SPECIES_START_END_2_MATCH_REMOVED, %GROUP_NUM_TO_SITE_TYPES, %GROUP_NUM_PLUS_TYPE_2_SPECIES_LIST,
-		%GROUP_TYPES_LIST_2_GROUP_TYPE, %SITE_TO_GROUP_NUM, %GROUP_NUM_TO_SPECIES, %GET_MATCH, %SITE_ID_2_SITE_TYPE, %SITE_ID_2_LENGTH,
-		%SPECIES_START_END_MASKED);
+		%SITE_TO_GROUP_NUM, %GROUP_NUM_TO_SPECIES, %GET_MATCH, %SITE_ID_2_SITE_TYPE, %SITE_ID_2_LENGTH, %SPECIES_START_END_MASKED);
 
 # What types of seed matches should we look for? (1 ==> look for it; 0 ==> skip this one)
 $GET_MATCH{1} = 1;	# 7mer-1a sites?
@@ -883,14 +882,7 @@ sub summarizePrintGroupsThisGeneThisMiRNA
 		$f[8] = $SITE_ID_2_SITE_TYPE{$siteTypeThisSite};
 		$dataOneSiteThisGeneThisMir = join "\t", @f;
 		
-		if ($GROUP_TYPES_LIST_2_GROUP_TYPE{$groupNumToSiteTypesList{$groupNumThisSite}})
-		{
-			$groupType = $GROUP_TYPES_LIST_2_GROUP_TYPE{$groupNumToSiteTypesList{$groupNumThisSite}};
-		}
-		else	# Unexpected set of groups
-		{
-			$groupType = $groupNumToSiteTypesList{$groupNumThisSite};
-		}
+		$groupType = $groupNumToSiteTypesList{$groupNumThisSite};
 		
 		$dataOneSiteThisGeneThisMir .= "\t$groupType";
 		$dataOneSiteThisGeneThisMir .= "\t$groupToInfo{$groupNumThisSite}";

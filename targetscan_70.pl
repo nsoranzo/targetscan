@@ -623,10 +623,6 @@ sub groupSitesThisGeneThisMiRNA
 	
 	# Initialize
 	%SITE_TO_GROUP_NUM = ();
-	my $numOverlapNt;
-	
-	# Can we drop this variable???  It doesn't seem to be used.
-	my %pairToDistance;
 
 	############### Check for position overlap between sites
 
@@ -642,33 +638,13 @@ sub groupSitesThisGeneThisMiRNA
 			# Skip comparison of same-species sites
 			if ($site1Species ne $site2Species)
 			{
+				my $numOverlapNt;
 				############  Choose combinations to give overlap  ############
 
-				# Same start and end
-				if ($site1Start eq $site2Start && $site1End eq $site2End)
+				# Same start or end
+				if ($site1Start eq $site2Start || $site1End eq $site2End)
 				{
 					groupThisPair($site1, $site2);
-					
-					$pairToDistance{"$site1 $site2"} = $site1End - $site1Start + 1;
-				}
-				# Same start
-				elsif ($site1Start eq $site2Start)
-				{
-					groupThisPair($site1, $site2);
-					
-					if ($site1End > $site2End)
-					{ $pairToDistance{"$site1 $site2"} = $site1End - $site1Start + 1;}
-					else { $pairToDistance{"$site1 $site2"} = $site2End - $site2Start + 1;}
-				}			
-				# Same end
-				elsif ($site1End eq $site2End)
-				{
-					groupThisPair($site1, $site2);
-					
-					if ($site1Start < $site2Start)
-					{ $pairToDistance{"$site1 $site2"} = $site1End - $site1Start + 1;}
-					else { $pairToDistance{"$site1 $site2"} = $site2End - $site2Start + 1;}
-					
 				}
 				# Offset one direction
 				#     xxxxxxx
@@ -679,8 +655,7 @@ sub groupSitesThisGeneThisMiRNA
 					if ($numOverlapNt >= $REQUIRED_OVERLAP)
 					{
 						groupThisPair($site1, $site2);
-						$pairToDistance{"$site1 $site2"} = $numOverlapNt;
-					}				
+					}
 				}
 				# Offset other direction
 				#    xxxxxxx
@@ -691,7 +666,6 @@ sub groupSitesThisGeneThisMiRNA
 					if ($numOverlapNt >= $REQUIRED_OVERLAP)
 					{
 						groupThisPair($site1, $site2);
-						$pairToDistance{"$site1 $site2"} = $numOverlapNt;
 					}
 				}
 				# One within the other (with gaps)
@@ -701,8 +675,7 @@ sub groupSitesThisGeneThisMiRNA
 					($site2Start > $site1Start && $site2End < $site1End) )
 				{
 					groupThisPair($site1, $site2);
-					$pairToDistance{"$site1 $site2"} = $numOverlapNt;
-				}				
+				}
 			}
 		}
 	}

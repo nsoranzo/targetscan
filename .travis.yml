@@ -8,9 +8,9 @@ install:
   - wget https://www.tbi.univie.ac.at/RNA/download/sourcecode/2_2_x/ViennaRNA-${VIENNARNA_VERSION}.tar.gz
   - tar -xzvf ViennaRNA-${VIENNARNA_VERSION}.tar.gz
   - cd ViennaRNA-${VIENNARNA_VERSION}/
-  - ./configure --without-perl --without-python
+  - ./configure --without-perl --without-python --without-python3
   - make
-  - export PATH=$PATH:$PWD/src/bin/
+  - export PATH=$PATH:$PWD/src/bin
   - cpanm Bio::TreeIO
   - cpanm Statistics::Lite
 

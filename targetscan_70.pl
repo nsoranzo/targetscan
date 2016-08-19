@@ -55,12 +55,12 @@ our $FIND_SITES_ALL_SPECIES = 0;
 our $REQUIRED_OVERLAP = 2;
 # Length of ribosome shadow at beginning of UTR to mask (since miRNAs don't target right next to CDS)
 our $BEG_UTR_MASK_LENGTH = 14;
-# If $VERBOSE is non-zero, each Gene ID will be printed as it's processed. 
+# If $VERBOSE is non-zero, each Gene ID will be printed as it's processed.
 our $VERBOSE = 1;
 
 our ($USAGE, $FILE_FORMATS, $GROUP_NUM, $MIR_FAM_ID, $LAST_UTR_ID);
 our (@OUTPUT_THIS_GENE_THIS_MIR);
-our (%MIR_ID_2_SEED, %MIR_ID_SPECIES, %MIR_TYPE_2_MATCH, %SPECIES_START_END, %SPECIES_START_END_2_MATCH, %SPECIES_TO_UTR, 
+our (%MIR_ID_2_SEED, %MIR_ID_SPECIES, %MIR_TYPE_2_MATCH, %SPECIES_START_END, %SPECIES_START_END_2_MATCH, %SPECIES_TO_UTR,
 		%SPECIES_START_END_REMOVED, %SPECIES_START_END_2_MATCH_REMOVED, %GROUP_NUM_TO_SITE_TYPES, %GROUP_NUM_PLUS_TYPE_2_SPECIES_LIST,
 		%SITE_TO_GROUP_NUM, %GROUP_NUM_TO_SPECIES, %GET_MATCH, %SITE_ID_2_SITE_TYPE, %SITE_ID_2_LENGTH, %SPECIES_START_END_MASKED);
 
@@ -99,19 +99,19 @@ readUTRs();
 
 sub getUsage
 {
-	# Print command usage when arguments are missing 
+	# Print command usage when arguments are missing
 
 	$USAGE = <<EODOCS;
 
 	Description: Search for predicted miRNA targets
-		     using the modified TargetScanS algorithm. 
+		     using the modified TargetScanS algorithm.
 
 	USAGE:
 		$0 miRNA_file UTR_file PredictedTargetsOutputFile
 
 	Required input files:
 		miRNA_file    => miRNA families by species
-		UTR_file      => Aligned UTRs		
+		UTR_file      => Aligned UTRs
 
 	Output file:
 		PredictedTargetsOutputFile    => Lists sites using alignment coordinates (MSA and UTR)
@@ -121,7 +121,7 @@ sub getUsage
 
 	Author: George W. Bell, Bioinformatics and Research Computing
 	Version: 7.0
-	Copyright (c) The Whitehead Institute of Biomedical Research 
+	Copyright (c) The Whitehead Institute of Biomedical Research
 
 EODOCS
 }
@@ -130,24 +130,24 @@ EODOCS
 sub getFileFormats
 {
 	# Print input file formats with '-h' flag
-	
+
 	$FILE_FORMATS = <<EODOCS;
 
 	** Required input files:
-	
+
 	1 - miRNA_file    => miRNA families by species
-		
+
 		contains three fields (tab-delimited):
 			a. miRNA family ID/name
 			b. seed region (7mer) for this miRNA
 			c. semicolon-delimited list of species IDs in which this miRNA has been annotated
-		ex:	   
+		ex:
 		let-7/98	GAGGUAG	9606;10090;10116
 		miR-127/127-3p	GAGGUAG	9606;10090
-		
+
 		Each miRNA family should be represented in a single line.
-		
-	2 - UTR_file      => Aligned UTRs		
+
+	2 - UTR_file      => Aligned UTRs
 
 		contains three fields (tab-delimited):
 			a. Gene/UTR ID or name
@@ -156,8 +156,8 @@ sub getFileFormats
 		ex:
 		BMP8B	9606	GUCCACCCGCCCGGC
 		BMP8B	9615	-GUG--CUGCCCACC
-		
-		A gene will typically be represented on multiple adjacent lines.	
+
+		A gene will typically be represented on multiple adjacent lines.
 
 EODOCS
 }
@@ -167,7 +167,7 @@ sub checkArguments
 {
 	# Check for input and output file arguments
 	# Print info if there are any problems
-	
+
 	if ($ARGV[0] && $ARGV[0] eq "-h")
 	{
 		print STDERR "$USAGE";
@@ -191,18 +191,18 @@ sub checkArguments
 		print STDERR "which should contain the aligned UTRs.\n";
 		exit;
 	}
-	
+
 	my $miRNAfile = $ARGV[0];
 	my $UTRfile = $ARGV[1];
 	my $coordsFile = $ARGV[2];
-	
+
 	if (-e $coordsFile)
 	{
 		print STDERR "Should I over-write $coordsFile [yes/no]? ";
 		my $answer = <STDIN>;
 		if ($answer !~ /^y/i)	{ exit; }
 	}
-	
+
 	return ($miRNAfile, $UTRfile, $coordsFile);
 }
 
@@ -217,21 +217,21 @@ sub readMiRNAs
 	while (<MIR_FAMILY_DATA>)
 	{
 		# let-7/98	GAGGUAG	10090
-	
+
 		chomp;
 		s/\r//g;	# For Windows and Mac
-		
+
 		###################  Public data format  ###################
-		
+
 		($MIR_FAM_ID, $mirSeedRegion, $mirSpeciesIDlist) = split (/\t/, $_);
-		
+
 		# Convert from DNA to RNA if needed
 		$mirSeedRegion =~ s/T/U/gi;
-		
+
 		# Added by GB 28 Sep 2015
 		$mirSeedRegion = uc($mirSeedRegion);
 		$MIR_ID_2_SEED{$MIR_FAM_ID} = $mirSeedRegion;
-		
+
 		my @mirSpeciesIDlist = split /;/, $mirSpeciesIDlist;
 		foreach my $mirSpeciesID (@mirSpeciesIDlist)
 		{
@@ -241,23 +241,23 @@ sub readMiRNAs
 	}
 
 	# Get patterns for search for (one for each miRNA family)
-	foreach $MIR_FAM_ID (sort keys %MIR_ID_2_SEED) 
+	foreach $MIR_FAM_ID (sort keys %MIR_ID_2_SEED)
 	{
 		get_seeds($MIR_ID_2_SEED{$MIR_FAM_ID}, $MIR_FAM_ID);
 	}
 }
 
 
-sub get_seeds 
+sub get_seeds
 {
 	# Get all types of seed matches for a given seed sequence
 
 	my ($seedRegion, $MIR_FAM_ID) = @_;
-	
+
 	# Get the 7mer-m8 seed match (exactly the reverse complement)
 	my $seed2 = $seedRegion;
 	my $rseed2 = reverse($seed2);
-	$rseed2 =~ tr/AUCG/UAGC/; 
+	$rseed2 =~ tr/AUCG/UAGC/;
 
 	# Get the 6mer seed match (7mer-m8 minus the first position)
 	my $rseed6 = $rseed2;
@@ -275,16 +275,16 @@ sub get_seeds
 
 	# Get the 8mer-U1 seed match (7mer-m8 seed match and add U at end)
 	my $rseed4 = $rseed2 . 'U';
-	
+
 	# print "SEED=$seedRegion\t7mer-1a=$rseed1\t7mer-m8=$rseed2\t8mer-1a=$rseed3\t8mer-1u=$rseed4\t6mer-1a=$rseed5\t6mer=$rseed6\n";
-	
+
 	# Make regex for searching by adding potential gaps between each pair of nts
 	$MIR_TYPE_2_MATCH{$MIR_FAM_ID}{1} = makeSeedMatchRegex($rseed1);
 	$MIR_TYPE_2_MATCH{$MIR_FAM_ID}{2} = makeSeedMatchRegex($rseed2);
 	$MIR_TYPE_2_MATCH{$MIR_FAM_ID}{3} = makeSeedMatchRegex($rseed3);
 	$MIR_TYPE_2_MATCH{$MIR_FAM_ID}{4} = makeSeedMatchRegex($rseed4);
 	$MIR_TYPE_2_MATCH{$MIR_FAM_ID}{5} = makeSeedMatchRegex($rseed5);
-	$MIR_TYPE_2_MATCH{$MIR_FAM_ID}{6} = makeSeedMatchRegex($rseed6);	
+	$MIR_TYPE_2_MATCH{$MIR_FAM_ID}{6} = makeSeedMatchRegex($rseed6);
 }
 
 
@@ -295,11 +295,11 @@ sub makeSeedMatchRegex
 	my $seedMatch = shift;
 	my $seedMatchLength = length($seedMatch);
 	my $seedMatchPattern = "";
-	
+
 	my @seedMatch = split '', $seedMatch;
-	
-	my $count = 0;	
-	foreach my $seedMatchNt (@seedMatch) 
+
+	my $count = 0;
+	foreach my $seedMatchNt (@seedMatch)
 	{
 		$count++;
 		($count < $seedMatchLength) ? ($seedMatchPattern .= "$seedMatchNt-{0,}") : ($seedMatchPattern .= "$seedMatchNt");
@@ -308,19 +308,19 @@ sub makeSeedMatchRegex
 }
 
 
-sub getUTRcoords 
+sub getUTRcoords
 {
 	###  Convert MSA coordinates to UTR coordinates
-	
-	my ($align, $end, $type) = ($_[0],$_[1],$_[2]);	
-	
+
+	my ($align, $end, $type) = ($_[0],$_[1],$_[2]);
+
 	my $utrBeg = substr($align, 0, $end);
 	$utrBeg =~ s/\-//g;
-	
-	my $start = length($utrBeg); 
+
+	my $start = length($utrBeg);
 	$end = $start + $SITE_ID_2_LENGTH{$type} - 1;
-	
-	return ($start, $end); 
+
+	return ($start, $end);
 }
 
 
@@ -377,7 +377,7 @@ sub readUTRs
 				# Add this UTR to the set
 				$SPECIES_TO_UTR{$thisSpeciesID} = $thisUTR;
 
-				$LAST_UTR_ID = $utrID; 			
+				$LAST_UTR_ID = $utrID;
 			}
 		}
 	}
@@ -389,18 +389,18 @@ sub readUTRs
 sub processUTRset
 {
 	# Look at each miRNA family
-	foreach $MIR_FAM_ID (sort keys %MIR_ID_2_SEED) 
-	{	
+	foreach $MIR_FAM_ID (sort keys %MIR_ID_2_SEED)
+	{
 		# Do one species' UTR at a time
 		foreach my $speciesIDthisUTR (sort keys %SPECIES_TO_UTR)
 		{
 			# Is this miRNA in this species?
 			# If so [or if we want to look anyway], look for sites
-			
+
 			if ($FIND_SITES_ALL_SPECIES || $MIR_ID_SPECIES{"${MIR_FAM_ID}::$speciesIDthisUTR"})
 			{
 				# print STDERR "Looking for $MIR_FAM_ID sites in species ($speciesIDthisUTR)....\n";
-			
+
 				foreach my $matchType (keys %GET_MATCH)
 				{
 					if ($GET_MATCH{$matchType})
@@ -413,14 +413,14 @@ sub processUTRset
 				###  Start by dropping 6mer sites that are included by 7mer sites
 				###  and then move to 7mer sites that are included in 8mer sites
 				###  site types: # 6mer 6mer-1a 7mer-1a 7mer-m8 8mer-1a 8mer-1u
-				
+
 				findRemoveMatchSubsets();
 			}
 		}
 
 		# If there are any hit(s) for this miRNA in any species, group each orthologous set of sites
 		my $numSitesThisMirnaThisSpecies = 0;
-		
+
 		foreach my $site (sort keys %SPECIES_START_END)
 		{
 			$numSitesThisMirnaThisSpecies++;
@@ -430,7 +430,7 @@ sub processUTRset
 		{
 			groupSitesThisGeneThisMiRNA();
 
-			# Finish processing this gene/miR data 
+			# Finish processing this gene/miR data
 			summarizePrintGroupsThisGeneThisMiRNA();
 		}
 
@@ -447,33 +447,33 @@ sub processUTRset
 
 sub getMatches
 {
-	# For a given seed sequence, return the positions and 
-	# lengths of the matches in the sequence alignment (with gaps) 
+	# For a given seed sequence, return the positions and
+	# lengths of the matches in the sequence alignment (with gaps)
 
 	###  Corrected size of backtrack after match is found (21 Jul 2010)
 
 	my ($MIR_FAM_ID, $speciesID, $matchType) = @_;
 	my ($num, $start, $end, $matchedSubAlignment, $len);
-	
+
 	my $alignment = $SPECIES_TO_UTR{"$speciesID"};
 	my $match = $MIR_TYPE_2_MATCH{$MIR_FAM_ID}{$matchType};
-	
+
 	# Convert to uppercase -- affects lower-case ORF-overlapping regions
 	my $uppercaseAlignment = uc($alignment);
-	
-	while ($uppercaseAlignment =~ /$match/g) 
+
+	while ($uppercaseAlignment =~ /$match/g)
 	{
 		$end =  pos($uppercaseAlignment);
 		$matchedSubAlignment = $&;
 		$len = length($&);
 		$start = $end - $len + 1;
-		
+
 		# Link site to site type
 		$SPECIES_START_END{"${speciesID}::${start}::$end"} = $matchType;
-		
+
 		# Link site to actual match (sequence alignment region, possibly including gaps)
 		$SPECIES_START_END_2_MATCH{"${speciesID}::${start}::$end"} = $matchedSubAlignment;
-		
+
 		# Compare original alignment to uppercase alignment; if they're different, flag as a masked region
 		my $originalAlignedRegion = substr($alignment, $start, $len);
 		my $ucAlignedRegion = substr($uppercaseAlignment, $start, $len);
@@ -482,7 +482,7 @@ sub getMatches
 			$SPECIES_START_END_MASKED{"${speciesID}::${start}::$end"} = 1;
 			# print STDERR "${speciesID}::${start}::$end => $ucAlignedRegion != $originalAlignedRegion => masked!\n";
 		}
-		
+
 		# pos($alignment) -= 5;	# but this may not be enough for matches with gaps
 		# Backtrack far enough for matches with gaps (corrected 21 July 2010)
 		pos($uppercaseAlignment) -= $len - 1;
@@ -494,13 +494,13 @@ sub findRemoveMatchSubsets
 {
 	# Remove shorter matches that are a subset of longer matches
 	# ex: 8mer-1a includes 7mer-m8 and 7mer-1a matches
-	
+
 	foreach my $siteThisUTRthisSpecies (keys %SPECIES_START_END)
 	{
 		my ($startPlusOne, $endMinusOne, $startPlusTwo);
 		my ($species, $start, $end) = split (/::/, $siteThisUTRthisSpecies);
 		my $gappedMatch = $SPECIES_START_END_2_MATCH{$siteThisUTRthisSpecies};
-		
+
 		if ($gappedMatch && $gappedMatch !~ /-/)
 		{
 			$startPlusOne = $start + 1;
@@ -513,41 +513,41 @@ sub findRemoveMatchSubsets
 			$startPlusOne = $start + $startPlusOneOffset;
 			$startPlusTwo = $start + $startPlusTwoOffset;
 			$endMinusOne = $end - $endMinusOneOffset;
-			
+
 			# print "Match with gaps: $gappedMatch ($siteThisUTRthisSpecies) [$startPlusOne, $startPlusTwo, $endMinusOne]\n";
 		}
-		
+
 		my $dropSite = 0;
 
 		if ($SPECIES_START_END{$siteThisUTRthisSpecies} && $SPECIES_START_END{$siteThisUTRthisSpecies} == 1)	# 7mer-1a
 		{
-			# Drop 6mer with same start position and 
+			# Drop 6mer with same start position and
 			#      6mer-1a with same end position
 
 			if ($GET_MATCH{6})	{ $dropSite = dropThisSite($species, $start, $endMinusOne); }	# 6mer
-			if ($GET_MATCH{5})	{ $dropSite = dropThisSite($species, $startPlusOne, $end); }	# 6mer-1a			
+			if ($GET_MATCH{5})	{ $dropSite = dropThisSite($species, $startPlusOne, $end); }	# 6mer-1a
 		}
 		elsif ($SPECIES_START_END{$siteThisUTRthisSpecies} && $SPECIES_START_END{$siteThisUTRthisSpecies} == 2)	# 7mer-m8
 		{
 			# Drop 6mer with same end position
-			
+
 			if ($GET_MATCH{6})	{ $dropSite = dropThisSite($species, $startPlusOne, $end); }	# 6mer
 		}
 		elsif ($SPECIES_START_END{$siteThisUTRthisSpecies} && $SPECIES_START_END{$siteThisUTRthisSpecies} == 3)	# 8mer-1a
 		{
 			# Drop 7mer-m8 with same starting position and
-			#      7mer-1a with same ending position and 
+			#      7mer-1a with same ending position and
 			#      6mer-1a with same ending position and
 			#      6mer starting one position later
 
 			if ($GET_MATCH{2})	{ $dropSite = dropThisSite($species, $start, $endMinusOne); }	# 7mer-m8
 			if ($GET_MATCH{1})	{ $dropSite = dropThisSite($species, $startPlusOne, $end); }	# 7mer-1a
 			if ($GET_MATCH{5})	{ $dropSite = dropThisSite($species, $startPlusTwo, $end); }	# 6mer-1a
-			if ($GET_MATCH{6})	{ $dropSite = dropThisSite($species, $startPlusOne, $endMinusOne); }	# 6mer			
+			if ($GET_MATCH{6})	{ $dropSite = dropThisSite($species, $startPlusOne, $endMinusOne); }	# 6mer
 		}
 		elsif($SPECIES_START_END{$siteThisUTRthisSpecies} && $SPECIES_START_END{$siteThisUTRthisSpecies} == 4)	# 8mer-1u
 		{
-			# Drop 7mer-m8 with same starting position and 
+			# Drop 7mer-m8 with same starting position and
 			#      6mer starting one position later
 
 			if ($GET_MATCH{2})	{ $dropSite = dropThisSite($species, $start, $endMinusOne); }	# 7mer-m8
@@ -561,10 +561,10 @@ sub getSubsetCoords
 {
 	# Given an alignment with gaps, we need to identify the positions of the
 	# second, third, and second-to-last nucleotides (so we can drop the appropriate match subsets)
-	
+
 	my $alignment = shift;
 	my ($matchPos, $startPlusOneOffset, $startPlusTwoOffset, $endMinusOneOffset);
-	
+
 	$alignment =~ /^[^-]-*([^-])/g;
 	$matchPos = pos($alignment);
 	$startPlusOneOffset = $matchPos - 1;
@@ -589,16 +589,16 @@ sub dropThisSite
 {
 	# Drop a site that is a subset of another site
 	my ($species, $start, $end) = @_;
-	
+
 	if ($SPECIES_START_END{"${species}::${start}::$end"})
 	{
 		# Keep record of what we deleted
-		$SPECIES_START_END_REMOVED{"${species}::${start}::$end"} = $SPECIES_START_END{"${species}::${start}::$end"};  
+		$SPECIES_START_END_REMOVED{"${species}::${start}::$end"} = $SPECIES_START_END{"${species}::${start}::$end"};
 		$SPECIES_START_END_2_MATCH_REMOVED{"${species}::${start}::$end"} = $SPECIES_START_END_2_MATCH{"${species}::${start}::$end"};
 
-		delete $SPECIES_START_END{"${species}::${start}::$end"};  
+		delete $SPECIES_START_END{"${species}::${start}::$end"};
 		delete $SPECIES_START_END_2_MATCH{"${species}::${start}::$end"};
-		
+
 		# print "We're deleting ${species}::${start}::$end\n";
 
 		return 1;
@@ -611,7 +611,7 @@ sub dropThisSite
 	}
 	else	# This site doesn't exist
 	{
-		# Was it already deleted, or is there a gap that requires adjustment???	
+		# Was it already deleted, or is there a gap that requires adjustment???
 		return 0;
 	}
 }
@@ -620,7 +620,7 @@ sub dropThisSite
 sub groupSitesThisGeneThisMiRNA
 {
 	# Group miRNA sites that overlap in alignment
-	
+
 	# Initialize
 	%SITE_TO_GROUP_NUM = ();
 
@@ -630,11 +630,11 @@ sub groupSitesThisGeneThisMiRNA
 	foreach my $site1 (sort keys %SPECIES_START_END)
 	{
 		my ($site1Species, $site1Start, $site1End) = split (/::/, $site1);
-	
+
 		foreach my $site2 (sort keys %SPECIES_START_END)
 		{
 			my ($site2Species, $site2Start, $site2End) = split (/::/, $site2);
-			
+
 			# Skip comparison of same-species sites
 			if ($site1Species ne $site2Species)
 			{
@@ -679,17 +679,17 @@ sub groupSitesThisGeneThisMiRNA
 			}
 		}
 	}
-	
+
 	foreach my $thisSite (sort keys %SPECIES_START_END)
 	{
 		my $annotated;
-		
+
 		my @siteAllInfo = split (/::/, $thisSite);
-		
+
 		my $speciesThisSite = $siteAllInfo[0];
-		
+
 		# print "Site is *$thisSite* and has GROUP_NUM $SITE_TO_GROUP_NUM{$thisSite}\n";
-	
+
 		# This site is a group of 1, so no group info yet
 		if (! $SITE_TO_GROUP_NUM{$thisSite})
 		{
@@ -697,10 +697,10 @@ sub groupSitesThisGeneThisMiRNA
 			$GROUP_NUM++;
 			# push @groupNumThisGeneThisMir, $GROUP_NUM;
 			$SITE_TO_GROUP_NUM{$thisSite} = $GROUP_NUM;
-			
+
 			# print "Now assigned $thisSite to GROUP_NUM $GROUP_NUM\n";
 		}
-		
+
 		if (! $GROUP_NUM_TO_SITE_TYPES{$SITE_TO_GROUP_NUM{$thisSite}})
 		{
 			# Start a list of site types for this group
@@ -711,10 +711,10 @@ sub groupSitesThisGeneThisMiRNA
 			# Add to the list of site types for this group
 			$GROUP_NUM_TO_SITE_TYPES{$SITE_TO_GROUP_NUM{$thisSite}} .= ";$SPECIES_START_END{$thisSite}";
 		}
-		
-		# Make a list of species in which a site type is found (in this group)  
+
+		# Make a list of species in which a site type is found (in this group)
 		$GROUP_NUM_PLUS_TYPE_2_SPECIES_LIST{$SITE_TO_GROUP_NUM{$thisSite}}{$SPECIES_START_END{$thisSite}} .= "$speciesThisSite ";
-						
+
 		###  If a wide site is present, its subset sites are also present
 		if    ($SPECIES_START_END{$thisSite} == 1)	# 7mer-1a
 		{
@@ -731,7 +731,7 @@ sub groupSitesThisGeneThisMiRNA
 			if ($GET_MATCH{2})	{ $GROUP_NUM_PLUS_TYPE_2_SPECIES_LIST{$SITE_TO_GROUP_NUM{$thisSite}}{2} .= "$speciesThisSite "; }	# 7mer-m8
 			if ($GET_MATCH{5})	{ $GROUP_NUM_PLUS_TYPE_2_SPECIES_LIST{$SITE_TO_GROUP_NUM{$thisSite}}{5} .= "$speciesThisSite "; }	# 6mer-1a
 			if ($GET_MATCH{6})	{ $GROUP_NUM_PLUS_TYPE_2_SPECIES_LIST{$SITE_TO_GROUP_NUM{$thisSite}}{6} .= "$speciesThisSite "; }	# 6mer
-		}		
+		}
 		elsif ($SPECIES_START_END{$thisSite} == 4)	# 8mer-1u
 		{
 			if ($GET_MATCH{2})	{ $GROUP_NUM_PLUS_TYPE_2_SPECIES_LIST{$SITE_TO_GROUP_NUM{$thisSite}}{2} .= "$speciesThisSite "; }	# 7mer-m8
@@ -742,11 +742,11 @@ sub groupSitesThisGeneThisMiRNA
 		# Given the MSA coords, get the corresponding UTR coords
 		# Correct 8mer OBOB: Nov 26, 2007
 		my ($utrStart, $utrEnd) = getUTRcoords($SPECIES_TO_UTR{$siteAllInfo[0]}, $siteAllInfo[1], $SPECIES_START_END{$thisSite});
-	
+
 		# Link each group to the species within it
 		$GROUP_NUM_TO_SPECIES{$SITE_TO_GROUP_NUM{$thisSite}} .= "$siteAllInfo[0];";
-	
-		# Is this miRNA annotated in this species? 
+
+		# Is this miRNA annotated in this species?
 		if (! $MIR_ID_SPECIES{"${MIR_FAM_ID}::$speciesThisSite"})
 		{
 			$annotated = " ";
@@ -755,7 +755,7 @@ sub groupSitesThisGeneThisMiRNA
 		{
 			$annotated = "x";
 		}
-		
+
 		push @OUTPUT_THIS_GENE_THIS_MIR, "$LAST_UTR_ID\t$MIR_FAM_ID\t$speciesThisSite\t$siteAllInfo[1]\t$siteAllInfo[2]\t$utrStart\t$utrEnd\t$SITE_TO_GROUP_NUM{$thisSite}\t$SPECIES_START_END{$thisSite}\t$annotated";
 	}
 }
@@ -801,17 +801,17 @@ sub summarizePrintGroupsThisGeneThisMiRNA
 	my ($uniqueSiteTypesList, $uniqueSiteTypesNamesList, $isMasked);
 	%groupToInfo = ();
 
-	foreach my $groupNum (sort {$a <=> $b} keys %GROUP_NUM_TO_SITE_TYPES ) 
+	foreach my $groupNum (sort {$a <=> $b} keys %GROUP_NUM_TO_SITE_TYPES )
 	{
 		@speciesThisGroup = makeListNonRedundant($GROUP_NUM_TO_SPECIES{$groupNum}, ";");
-	
+
 		if ($GROUP_NUM_TO_SITE_TYPES{$groupNum})
 		{
 			my @siteTypes = split (/;/, $GROUP_NUM_TO_SITE_TYPES{$groupNum});
-			
+
 			# Make this site type list unique (shouldn't be necessary) and sorted 5.2.07
 			my @uniqueSiteTypes = makeListNonRedundant($GROUP_NUM_TO_SITE_TYPES{$groupNum}, ";");
-			
+
 			# Convert site types list into site names
 			$uniqueSiteTypesNamesList = "";
 			foreach my $siteType (@uniqueSiteTypes)
@@ -831,10 +831,10 @@ sub summarizePrintGroupsThisGeneThisMiRNA
 		{
 			$uniqueSiteTypesList = "";
 		}
-		
+
 		$groupNumToSiteTypesList{$groupNum} = $uniqueSiteTypesNamesList;
-		
-		$groupToInfo{$groupNum} = "@speciesThisGroup";		
+
+		$groupToInfo{$groupNum} = "@speciesThisGroup";
 	}
 
 	###  Sort array by "group number" field
@@ -843,8 +843,8 @@ sub summarizePrintGroupsThisGeneThisMiRNA
 			$a->[1] <=> $b->[1]  # first of the selected fields
 		 }
 	map  { [ $_, (split /\t/)[7] ] } # select desired fields of a tab-delimited line in array
-	@OUTPUT_THIS_GENE_THIS_MIR; 
-	
+	@OUTPUT_THIS_GENE_THIS_MIR;
+
 	foreach my $dataOneSiteThisGeneThisMir (@OUTPUT_THIS_GENE_THIS_MIR)
 	{
 		my @f = split (/\t/, $dataOneSiteThisGeneThisMir);
@@ -854,12 +854,12 @@ sub summarizePrintGroupsThisGeneThisMiRNA
 		# Replace site type ID with site type name
 		$f[8] = $SITE_ID_2_SITE_TYPE{$siteTypeThisSite};
 		$dataOneSiteThisGeneThisMir = join "\t", @f;
-		
+
 		$groupType = $groupNumToSiteTypesList{$groupNumThisSite};
-		
+
 		$dataOneSiteThisGeneThisMir .= "\t$groupType";
 		$dataOneSiteThisGeneThisMir .= "\t$groupToInfo{$groupNumThisSite}";
-		
+
 		# Add the species list for this site type (but only if site type ne group type)
 		if ($groupType ne $SITE_ID_2_SITE_TYPE{$siteTypeThisSite})
 		{
@@ -871,9 +871,9 @@ sub summarizePrintGroupsThisGeneThisMiRNA
 		{
 			$dataOneSiteThisGeneThisMir .= "\t";
 		}
-		
+
 		$isMasked = $SPECIES_START_END_MASKED{"$f[2]::$f[3]::$f[4]"} ? 1 : 0;
-		$dataOneSiteThisGeneThisMir .= "\t$isMasked";	
+		$dataOneSiteThisGeneThisMir .= "\t$isMasked";
 
 		print COORDS "$dataOneSiteThisGeneThisMir\n";
 	}
@@ -889,9 +889,9 @@ sub makeListNonRedundant
 
 	my %uniqueList = ();
 	%uniqueList = map { $_ => 1 } @values;
-	my @uniqueList = keys %uniqueList;		
+	my @uniqueList = keys %uniqueList;
 	@uniqueList = sort @uniqueList;
-	
+
 	# If entries are numbers
 	@uniqueList = sort {$a <=> $b} @uniqueList;
 	# If entries are not numbers
@@ -910,7 +910,7 @@ sub getSiteTypeKeys
 	$SITE_ID_2_SITE_TYPE{4} = "8mer-1u";
 	$SITE_ID_2_SITE_TYPE{5} = "6mer-1a";
 	$SITE_ID_2_SITE_TYPE{6} = "6mer";
-	
+
 	$SITE_ID_2_LENGTH{1} = 7;
 	$SITE_ID_2_LENGTH{2} = 7;
 	$SITE_ID_2_LENGTH{3} = 8;

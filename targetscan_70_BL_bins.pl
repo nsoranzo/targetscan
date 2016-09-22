@@ -76,7 +76,7 @@ READ_TREE($treeFile);
 GET_BL_THRESHOLDS();
 
 # Initialize
-$lastGeneID = " ";
+$lastGeneID = "";
 
 open (ALIGNMENT_TABS, $UTRfile) || die "Cannot open $UTRfile for reading: $!";
 while (<ALIGNMENT_TABS>)
@@ -88,9 +88,9 @@ while (<ALIGNMENT_TABS>)
 	chomp;
 	s/\r//g;
 	
-	@f = split (/\t/, $_);
+	my @f = split (/\t/, $_);
 	
-	if ($geneID && $f[0] ne $lastGeneID)	# Process the last block of sequences
+	if ($lastGeneID && $f[0] ne $lastGeneID)	# Process the last block of sequences
 	{
 		if ($VERBOSE)
 		{
@@ -106,16 +106,16 @@ while (<ALIGNMENT_TABS>)
 		print "$lastGeneID\t$medianBLthisUTR\t$binThisUTR\n";
 		
 		# Reset
-		$geneID = "";
+		$lastGeneID = "";
+		%species2alignment = ();
 		@species = ();
+		@branchLengthsThisUTR = ();
 	}
 	
-	$geneID = $f[0];
+	$lastGeneID = $f[0];
 	$species2alignment{$f[1]} = "$f[2]";
 		
 	push @species, $f[1];
-	
-	$lastGeneID = $geneID;
 }
 
 ###  Get the last one
@@ -135,11 +135,12 @@ sub getSpeciesListBLwithRefNt
 
 	my $printDetails = shift;
 
-	$alignmentLength = length ($species2alignment{$refGenome});
+	my $alignmentLength = length($species2alignment{$refGenome});
 	
-	for ($i = 0; $i < $alignmentLength; $i++)
+	for (my $i = 0; $i < $alignmentLength; $i++)
 	{
-		$keep = 0;
+		my $keep = 0;
+		my %posThisSpecies = ();
 	
 		foreach $species (@species)
 		{
@@ -161,16 +162,16 @@ sub getSpeciesListBLwithRefNt
 			#
 			#
 			
-			$consensusThisPos = "$posThisSpecies{$refGenome}"; 
+			my $consensusThisPos = "$posThisSpecies{$refGenome}";
 			
 			# Skip positions with a gap in the reference genome
 			if  ($consensusThisPos ne "-")
 			{
 				# Compare each nt to consensus and count the ones that agree
 
-				$consensusForBranchLength = uc($consensusThisPos);
+				my $consensusForBranchLength = uc($consensusThisPos);
 
-				@speciesForBranchCalc = ();
+				my @speciesForBranchCalc = ();
 
 				foreach $species (@species)
 				{
@@ -185,32 +186,25 @@ sub getSpeciesListBLwithRefNt
 				# Sort all species in this list (to reduce number of combinations)
 				@speciesForBranchCalc = sort @speciesForBranchCalc;
 				
-				$speciesThisPos = "@speciesForBranchCalc";
+				my $speciesThisPos = "@speciesForBranchCalc";
 
 				###  Get branch length for this set of species at this position
-
+				my $branchLength;
 				if ($speciesThisPos !~ /\s+/)	# Only one species in list
 				{
 					$branchLength = 0;
 				}
-				elsif ($speciesListToBL{$speciesThisPos})
-				{
-					$branchLength = $speciesListToBL{$speciesThisPos};
-				}
 				else
 				{
-					@include_orgs = split (/ /, $speciesThisPos);
+					my @include_orgs = split (/ /, $speciesThisPos);
 
 					$branchLength = get_branch_length(@include_orgs);
-
-					# Save in memory
-					$speciesListToBL{$speciesThisPos} = $branchLength;
 				}
 				push @branchLengthsThisUTR, $branchLength;
 
 				if ($printDetails)
 				{
-					print "$geneID\t$i\t$consensusForBranchLength\t$speciesThisPos\t$branchLength\n";
+					print "$lastGeneID\t$i\t$consensusForBranchLength\t$speciesThisPos\t$branchLength\n";
 				}
 			}
 		}
@@ -224,7 +218,7 @@ sub READ_TREE
 	my $treefile = shift;
 	my $input = new Bio::TreeIO(-file   => $treefile,
 					-format => "newick");
-	$tree = $input->next_tree;
+	my $tree = $input->next_tree;
 
 	foreach my $org (@all_orgs) 
 	{
@@ -236,7 +230,7 @@ sub GET_BL_THRESHOLDS
 {	
 	# Make s hash of BL thresholds
 	
-	$bin = 1;
+	my $bin = 1;
 	
 	foreach $BL_threshold (@BL_thresholds)
 	{
@@ -337,12 +331,7 @@ sub get_branch_length
 sub processUTRbranchLengths
 {
 	# Get the median of all branch lengths for a UTR
-
-	my $medianBLthisUTR = median(@branchLengthsThisUTR);
-	
-	@branchLengthsThisUTR = ();
-	
-	return $medianBLthisUTR;
+	return median(@branchLengthsThisUTR);
 }
 
 sub assignBLtoBin
@@ -350,9 +339,7 @@ sub assignBLtoBin
 	# Use BL thresholds to assign a UTR to a bin
 
 	my $BL = shift;
-	my $binthisBL;
-	
-	$binthisBL = 1;
+	my $binthisBL = 1;
 	
 	my @thresholds = sort { $a <=> $b } keys %maxBLThisBin;
 	

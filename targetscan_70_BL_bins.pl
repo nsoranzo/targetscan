@@ -108,7 +108,6 @@ while (<ALIGNMENT_TABS>)
 		# Reset
 		$geneID = "";
 		@species = ();
-		%speciesToFinalAlignment = ();
 	}
 	
 	$geneID = $f[0];
@@ -141,7 +140,6 @@ sub getSpeciesListBLwithRefNt
 	for ($i = 0; $i < $alignmentLength; $i++)
 	{
 		$keep = 0;
-		$ntsThisPos = "";
 	
 		foreach $species (@species)
 		{
@@ -155,14 +153,6 @@ sub getSpeciesListBLwithRefNt
 		
 		if ($keep)
 		{
-			foreach $species (@species)
-			{
-				$speciesToFinalAlignment{$species} .= $posThisSpecies{$species};
-				
-				# Make a string of all nts at this position
-				$ntsThisPos .= $posThisSpecies{$species};				
-			}
-						
 			#
 			#
 			#
